@@ -44,11 +44,11 @@ class MastodonStreamListener(mastodon.StreamListener):
         self.logger.debug(f'{account["acct"]} is mentioned me: {content}')
 
         if PATTERN_REGISTER.search(content):
-            self.register(account)
+            self.register(account, status['id'])
         elif PATTERN_UNREGISTER.search(content):
-            self.unregister(account)
+            self.unregister(status, status['id'])
 
-    def register(self, account):
+    def register(self, account, reply_id):
         acct = self.full_acct(account)
         domain = self.get_domain(account)
 
@@ -66,9 +66,9 @@ class MastodonStreamListener(mastodon.StreamListener):
         admin.server = server
         session.commit()
 
-        self.post(f'@{acct} 구독 되었습니다', visibility='direct')
+        self.post(f'@{acct} 구독 되었습니다', visibility='direct', in_reply_to_id=reply_id)
 
-    def unregister(self, account):
+    def unregister(self, account, reply_id):
         acct = self.full_acct(account)
 
         self.logger.info(f'Unregistering {acct}')
@@ -84,7 +84,7 @@ class MastodonStreamListener(mastodon.StreamListener):
 
             session.commit()
 
-        self.post(f'@{acct} 구독 해지 되었습니다', visibility='direct')
+        self.post(f'@{acct} 구독 해지 되었습니다', visibility='direct', in_reply_to_id=reply_id)
 
     def full_acct(self, account):
         acct = account.acct
@@ -93,11 +93,12 @@ class MastodonStreamListener(mastodon.StreamListener):
     def get_domain(self, account):
         return self.full_acct(account).split('@')[1]
 
-    def post(self, status, visibility='unlisted'):
+    @functools.wraps(mastodon.Mastodon.status_post)
+    def post(self, status, *args, **kwargs):
         if self.debug:
             self.logger.info(status)
         else:
-            self.api.status_post(status, visibility=visibility)
+            self.api.status_post(status, *args, **kwargs)
 
     @staticmethod
     def get_plain_content(status):
