@@ -38,4 +38,4 @@ class Admin(Base):
     server = relationship(Server, backref='admins')
 
     def __repr__(self):
-        return f'<{self.__class__.__name___} {self.acct}>'
+        return f'<{self.__class__.__name__} {self.acct}>'
