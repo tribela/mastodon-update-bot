@@ -12,4 +12,3 @@ if __name__ == '__main__':
 
     mastodon_manager = MastodonManager(db_url, domain, token, debug=debug)
     mastodon_manager.run()
-

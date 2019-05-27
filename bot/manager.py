@@ -1,4 +1,5 @@
 import datetime
+import functools
 import logging
 import math
 import time
@@ -166,11 +167,15 @@ class MastodonManager():
                 f'https://github.com/tootsuite/mastodon/{release}'
             )
 
-    def post(self, status):
+    @functools.wraps(mastodon.Mastodon.status_post)
+    def post(self, status, *args, **kwargs):
         if self.debug:
             self.logger.info(status)
         else:
-            self.api.status_post(status, visibility='unlisted')
+            try:
+                self.api.status_post(status, *args, **kwargs)
+            except mastodon.MastodonError as e:
+                self.logger.error(e)
 
     @staticmethod
     def utcnow():

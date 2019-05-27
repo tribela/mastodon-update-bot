@@ -98,7 +98,10 @@ class MastodonStreamListener(mastodon.StreamListener):
         if self.debug:
             self.logger.info(status)
         else:
-            self.api.status_post(status, *args, **kwargs)
+            try:
+                self.api.status_post(status, *args, **kwargs)
+            except mastodon.MastodonError as e:
+                self.logger.error(e)
 
     @staticmethod
     def get_plain_content(status):
