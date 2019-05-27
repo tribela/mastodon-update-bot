@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+import os
+
+from bot.engine import init_db
+
+
+url = os.getenv('DATABASE_URL')
+
+init_db(url)

@@ -1,0 +1,8 @@
+[flake8]
+exlcludes =
+  .git
+  .env
+  .direnv
+
+import-order-style = edited
+max-line-length = 120
