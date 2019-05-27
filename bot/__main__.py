@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import time
 
@@ -13,6 +14,11 @@ from sqlalchemy import func
 
 from .engine import get_session
 from .models import Mastodon, Server, Admin
+from.logging import config_logger
+
+
+config_logger()
+logger = logging.getLogger('bot')
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -68,7 +74,7 @@ def check_and_notify(domain: str, release: str):
     try:
         session = Session()
         server = session.query(Server).filter(Server.domain == domain).one()
-        print(f'Checking {server.domain}')
+        logger.debug(f'Checking {server.domain}')
         server_version = requests.get(f'https://{domain}/api/v1/instance').json()['version']
 
         if server.version != server_version:
@@ -79,25 +85,25 @@ def check_and_notify(domain: str, release: str):
 
         session.commit()
     except Exception as e:
-        print(e)
+        logger.error(e)
         return
 
     if version.parse(server_version) < version.parse(release):
-        print(f'{domain} is still {server_version}')
+        logger.info(f'{domain} is still {server_version}')
         if not server.last_notified or utcnow() - server.last_notified > datetime.timedelta(days=1):
-            print(f'Notify to {domain}')
+            logger.info(f'Notify to {domain}')
             server.last_notified = func.now()
 
         session.commit()
 
 
 def do_job():
-    print('Starting job')
+    logger.debug('Starting job')
     session = Session()
     release, is_new = check_mastodon_release()
-    print(f'Latest release: {release}')
+    logger.info(f'Latest release: {release}')
     if is_new:
-        print(f'New version: {release}')
+        logger.info(f'New version: {release}')
     else:
         pool = ThreadPool()
         for server in session.query(Server).all():
@@ -107,7 +113,7 @@ def do_job():
         pool.join()
 
 
-
+logger.info('Scheduling jobs')
 schedule.every(1).minutes.do(do_job)
 schedule.run_all()
 while True:
