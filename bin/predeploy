@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import pathlib
 
-from bot.engine import init_db
+sys.path.insert(
+    0,
+    str(pathlib.Path(__file__).resolve().parents[1]))
+
+from bot.engine import init_db  # noqa
 
 
 url = os.getenv('DATABASE_URL')
