@@ -13,14 +13,18 @@ from sqlalchemy import func
 
 from .engine import get_session
 from .mastodon import MastodonStreamListener
-from .models import Mastodon, Server
+from .models import Mastodon, Server, Admin
 
 
 class MastodonManager():
 
-    def __init__(self, db_url: str, domain: str, token: str):
+    def __init__(self, db_url: str, domain: str, token: str, debug=False):
         self.Session = get_session(db_url)
         self.logger = logging.getLogger(__name__)
+        self.debug = debug
+
+        if self.debug:
+            self.logger.warning('Running on DEBUG mode')
 
         self.api = mastodon.Mastodon(
             api_base_url=f'https://{domain}/',
@@ -101,8 +105,10 @@ class MastodonManager():
             self.logger.info(f'{domain} is still {server_version}')
             if self.should_notify(server.last_notified):
                 self.logger.info(f'Notify to {domain}')
-                self.notify_admins(domain)
+                self.notify_admins(domain, release)
                 server.last_notified = func.now()
+            else:
+                self.logger.debug(f'Not notifying to {domain}')
 
             session.commit()
 
@@ -135,11 +141,36 @@ class MastodonManager():
             schedule.run_pending()
             time.sleep(5)
 
-    def notify_admins(self, domain):
-        pass
+    def notify_admins(self, domain, release):
+        session = self.Session()
+        server = session.query(Server).filter_by(domain=domain).first()
+        if not server:
+            return
+
+        release_date = session.query(Mastodon).first().updated
+        days_passed = (self.utcnow() - release_date).days
+
+        for admin in server.admins:
+            self.post(
+                f'@{admin.acct}\n'
+                f'{release}가 릴리즈 된 지 {days_passed}일 지났어요\n'
+                f'https://github.com/tootsuite/mastodon/{release}'
+            )
 
     def notify_new_version(self, release):
-        pass
+        session = self.Session()
+        for admin in session.query(Admin).all():
+            self.post(
+                f'@{admin.acct}\n'
+                f'새로운 마스토돈 {release}가 릴리즈 되었어요\n'
+                f'https://github.com/tootsuite/mastodon/{release}'
+            )
+
+    def post(self, status):
+        if self.debug:
+            self.logger.info(status)
+        else:
+            self.api.status_post(status, visibility='unlisted')
 
     @staticmethod
     def utcnow():
