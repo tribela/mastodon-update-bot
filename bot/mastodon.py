@@ -80,14 +80,12 @@ class MastodonStreamListener(mastodon.StreamListener):
 
             session.commit()
 
-    @staticmethod
-    def full_acct(account):
+    def full_acct(self, account):
         acct = account.acct
         return acct if '@' in account.acct else f'{acct}@{self.domain}'
 
-    @classmethod
-    def get_domain(cls, account):
-        return cls.full_acct(account).split('@')[1]
+    def get_domain(self, account):
+        return self.full_acct(account).split('@')[1]
 
     @staticmethod
     def get_plain_content(status):
