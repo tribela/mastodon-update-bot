@@ -31,7 +31,7 @@ class MastodonManager():
             access_token=token
         )
 
-        self.stream_listener = MastodonStreamListener(self.api, self.Session)
+        self.stream_listener = MastodonStreamListener(self.api, self.Session, debug=debug)
 
     def should_notify(self, last_notified: datetime.datetime):
         if last_notified is None:

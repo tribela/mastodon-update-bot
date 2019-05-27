@@ -26,7 +26,7 @@ def config_logger():
             '': {
                 'handlers': ['default'],
                 'level': 'WARNING',
-                'propagate': True,
+                'propagate': False,
             },
             'bot': {
                 'handlers': ['default'],

@@ -15,12 +15,14 @@ PATTERN_UNREGISTER = re.compile(r'\bunregister\b')
 
 class MastodonStreamListener(mastodon.StreamListener):
 
-    def __init__(self, api: mastodon.Mastodon, sessionmaker):
+    def __init__(self, api: mastodon.Mastodon, sessionmaker, debug=False):
         super().__init__()
         self.api = api
         self.Session = sessionmaker
         self.logger = logging.getLogger(__name__)
         self.domain = api.instance().uri
+
+        self.debug = debug
 
     def on_notification(self, notification):
         if notification['type'] == 'follow':
@@ -95,7 +97,7 @@ class MastodonStreamListener(mastodon.StreamListener):
         if self.debug:
             self.logger.info(status)
         else:
-            self.api.status_post(status, visibility='unlisted')
+            self.api.status_post(status, visibility=visibility)
 
     @staticmethod
     def get_plain_content(status):
