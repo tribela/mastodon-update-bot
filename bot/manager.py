@@ -49,7 +49,7 @@ class MastodonManager():
         notified_level = math.log(days_notified, 2) if days_notified else -1
         passed_level = math.log(days_passed, 2) if days_passed else -1
 
-        return notified_level < passed_level
+        return passed_level - notified_level >= 1
 
     def check_mastodon_release(self):
         """
