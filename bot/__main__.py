@@ -13,6 +13,7 @@ import schedule
 from packaging import version
 from sqlalchemy import func
 
+from bot.mastodon import make_mastodon_stream
 from .engine import get_session
 from .models import Mastodon, Server, Admin
 from.logging import config_logger
@@ -133,9 +134,18 @@ def do_job():
         pool.join()
 
 
-logger.info('Scheduling jobs')
-schedule.every(1).minutes.do(do_job)
-schedule.run_all()
-while True:
-    schedule.run_pending()
-    time.sleep(5)
+if __name__ == '__main__':
+    logger.info('Startign mastodon stream')
+    mastodon_stream = make_mastodon_stream(
+        os.getenv('MASTODON_HOST'),
+        os.getenv('MASTODON_ACCESS_TOKEN'),
+        Session
+    )
+    mastodon_stream.stream_user(run_async=True, reconnect_async=True)
+
+    logger.info('Scheduling jobs')
+    schedule.every(1).hours.do(do_job)
+    schedule.run_all()
+    while True:
+        schedule.run_pending()
+        time.sleep(5)
