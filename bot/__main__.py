@@ -1,5 +1,6 @@
 import datetime
 import logging
+import math
 import os
 import time
 
@@ -28,6 +29,25 @@ Session = get_session(DATABASE_URL)
 
 def utcnow():
     return datetime.datetime.now(datetime.timezone.utc)
+
+
+def should_notify(last_notified: datetime.datetime):
+    if last_notified is None:
+        return True
+
+    session = Session()
+    release_date = session.query(Mastodon).one().updated
+    # Days from release to last notified
+    days_notified = (last_notified - release_date).days
+    # Days from release to now
+    days_passed = (utcnow() - release_date).days
+    logger.debug(f'Days notified: {days_notified}, passed: {days_passed}')
+
+    # 0, 1, 2, 4, 8
+    notified_level = math.log(days_notified, 2) if days_notified else -1
+    passed_level = math.log(days_passed, 2) if days_passed else -1
+
+    return notified_level < passed_level
 
 
 def get_server_version(domain: str):
@@ -90,7 +110,7 @@ def check_and_notify(domain: str, release: str):
 
     if version.parse(server_version) < version.parse(release):
         logger.info(f'{domain} is still {server_version}')
-        if not server.last_notified or utcnow() - server.last_notified > datetime.timedelta(days=1):
+        if should_notify(server.last_notified):
             logger.info(f'Notify to {domain}')
             server.last_notified = func.now()
 
