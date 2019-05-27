@@ -64,6 +64,8 @@ class MastodonStreamListener(mastodon.StreamListener):
         admin.server = server
         session.commit()
 
+        self.post(f'@{acct} 구독 되었습니다', visibility='direct')
+
     def unregister(self, account):
         acct = self.full_acct(account)
 
@@ -80,12 +82,20 @@ class MastodonStreamListener(mastodon.StreamListener):
 
             session.commit()
 
+        self.post(f'@{acct} 구독 해지 되었습니다', visibility='direct')
+
     def full_acct(self, account):
         acct = account.acct
         return acct if '@' in account.acct else f'{acct}@{self.domain}'
 
     def get_domain(self, account):
         return self.full_acct(account).split('@')[1]
+
+    def post(self, status, visibility='unlisted'):
+        if self.debug:
+            self.logger.info(status)
+        else:
+            self.api.status_post(status, visibility='unlisted')
 
     @staticmethod
     def get_plain_content(status):
