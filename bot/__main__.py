@@ -13,13 +13,11 @@ import schedule
 from packaging import version
 from sqlalchemy import func
 
-from bot.mastodon import make_mastodon_stream
+from .mastodon import make_mastodon_stream
 from .engine import get_session
-from .models import Mastodon, Server, Admin
-from.logging import config_logger
+from .models import Mastodon, Server
 
 
-config_logger()
 logger = logging.getLogger('bot')
 
 DATABASE_URL = os.getenv('DATABASE_URL')
