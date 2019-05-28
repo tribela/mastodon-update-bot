@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e08f7eca461eaf851b0561183ad090ffbaea88450297aefe0ec0efa068f6f72c"
+            "sha256": "ad9941d75249692d7a2282609f2eaaa3ca25c192884399a4a5da5159eb3c2cf6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -215,10 +215,6 @@
             "index": "pypi",
             "version": "==1.4.2"
         },
-        "mastodon-update-bot": {
-            "editable": true,
-            "path": "."
-        },
         "packaging": {
             "hashes": [
                 "sha256:0c98a5d0be38ed775798ece1b9727178c4469d9c3b4ada66e8e6b7849f8732af",
@@ -263,7 +259,6 @@
         },
         "pycparser": {
             "hashes": [
-                "sha256:7000f8b27d8abbe1f4c862dbd2eb1567ae0cc33034c529214776c9782d452cf5",
                 "sha256:a988718abfad80b6b157acce7bf130a30876d27603738ac39f140993246b25b3"
             ],
             "version": "==2.19"
