@@ -1,4 +1,6 @@
 import os
+import sys
+import pathlib
 
 from logging.config import fileConfig
 
@@ -18,6 +20,9 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+sys.path.append(
+    str(pathlib.Path(__file__).resolve().parents[1])
+)
 from bot import models  # noqa
 target_metadata = models.Base.metadata
 
