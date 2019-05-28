@@ -1,16 +1,5 @@
-#!/usr/bin/env python
+#!/bin/bash
 
-import os
-import sys
-import pathlib
+set -eo pipefail
 
-sys.path.insert(
-    0,
-    str(pathlib.Path(__file__).resolve().parents[1]))
-
-from bot.engine import init_db  # noqa
-
-
-url = os.getenv('DATABASE_URL')
-
-init_db(url)
+alembic upgrade head
