@@ -50,6 +50,8 @@ class MastodonManager():
         notified_level = math.log(days_notified, 2) if days_notified else -1
         passed_level = math.log(days_passed, 2) if days_passed else -1
 
+        session.close()
+
         return passed_level - notified_level >= 1
 
     def check_mastodon_release(self):
@@ -82,6 +84,8 @@ class MastodonManager():
             session.add(mastodon)
             session.commit()
 
+        session.close()
+
         return current_version, is_new
 
     def check_and_notify(self, domain: str, release: str):
@@ -98,8 +102,10 @@ class MastodonManager():
             server.version = server_version
 
             session.commit()
+            session.close()
         except Exception as e:
             self.logger.error(e)
+            session.close()
             return
 
         if version.parse(server_version) < version.parse(release):
@@ -112,6 +118,7 @@ class MastodonManager():
                 self.logger.debug(f'Not notifying to {domain}')
 
             session.commit()
+            session.close()
 
     def job(self):
         self.logger.debug('Starting job')
@@ -129,6 +136,8 @@ class MastodonManager():
             pool.close()
             pool.join()
 
+        session.close()
+
     def run(self):
         me = self.api.account_verify_credentials()
         self.logger.info(f'I am {me.acct}')
@@ -136,7 +145,10 @@ class MastodonManager():
         self.stream_listener.stream_user(run_async=True, reconnect_async=True)
 
         self.logger.info('Scheduling jobs')
-        schedule.every(1).hours.do(self.job)
+        if self.debug:
+            schedule.every(10).seconds.do(self.job)
+        else:
+            schedule.every(1).hours.do(self.job)
         schedule.run_all()
         while True:
             schedule.run_pending()
@@ -158,6 +170,8 @@ class MastodonManager():
                 f'https://github.com/tootsuite/mastodon/{release}'
             )
 
+        session.close()
+
     def notify_new_version(self, release):
         session = self.Session()
         for admin in session.query(Admin).all():
@@ -166,6 +180,8 @@ class MastodonManager():
                 f'새로운 마스토돈 {release}가 릴리즈 되었어요\n'
                 f'https://github.com/tootsuite/mastodon/{release}'
             )
+
+        session.close()
 
     @functools.wraps(mastodon.Mastodon.status_post)
     def post(self, status, *args, **kwargs):
