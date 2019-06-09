@@ -6,11 +6,11 @@ import mastodon
 
 from lxml import html
 
-from .models import Admin, Server, get_or_create
-
+from .models import Admin, Server, get_or_create, UpdateType
 
 PATTERN_REGISTER = re.compile(r'\bregister\b')
 PATTERN_UNREGISTER = re.compile(r'\bunregister\b')
+PATTERN_TYPE = re.compile(r'type: (\w+)')
 
 
 class MastodonStreamListener(mastodon.StreamListener):
@@ -47,6 +47,9 @@ class MastodonStreamListener(mastodon.StreamListener):
             self.register(account, status['id'])
         elif PATTERN_UNREGISTER.search(content):
             self.unregister(account, status['id'])
+        elif PATTERN_TYPE.search(content):
+            update_type = PATTERN_TYPE.search(content).group(1)
+            self.change_update_type(account, status['id'], update_type)
 
     def register(self, account, reply_id):
         acct = self.full_acct(account)
@@ -88,6 +91,35 @@ class MastodonStreamListener(mastodon.StreamListener):
         session.close()
 
         self.post(f'@{acct} 구독 해지 되었습니다', visibility='direct', in_reply_to_id=reply_id)
+
+    def change_update_type(self, account, reply_id, update_type):
+        acct = self.full_acct(account)
+
+        valid_values = set(item.value for item in UpdateType)
+
+        if update_type not in valid_values:
+            self.post(
+                f'Invalid type. valid types are {", ".join(valid_values)}',
+                visiblity='direct', in_reply_to_id=reply_id)
+
+        self.logger.info(f'Changing update type of {acct} to {update_type}')
+
+        session = self.Session()
+        admin = session.query(Admin).filter_by(acct=acct).first()
+
+        if not admin:
+            self.post(
+                'You are not registered. Please send me "register" to register you.',
+                visiblity='direct', in_reply_to_id=reply_id)
+        else:
+            admin.update_type = UpdateType(update_type)
+            session.commit()
+            self.post(
+                f'Changed update type to {update_type}',
+                visiblity='direct', in_reply_to_id=reply_id)
+
+        session.close()
+
 
     def full_acct(self, account):
         acct = account.acct
