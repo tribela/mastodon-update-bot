@@ -46,7 +46,7 @@ class MastodonStreamListener(mastodon.StreamListener):
         if PATTERN_REGISTER.search(content):
             self.register(account, status['id'])
         elif PATTERN_UNREGISTER.search(content):
-            self.unregister(status, status['id'])
+            self.unregister(account, status['id'])
 
     def register(self, account, reply_id):
         acct = self.full_acct(account)
@@ -65,6 +65,7 @@ class MastodonStreamListener(mastodon.StreamListener):
         )
         admin.server = server
         session.commit()
+        session.close()
 
         self.post(f'@{acct} 구독 되었습니다', visibility='direct', in_reply_to_id=reply_id)
 
@@ -83,6 +84,8 @@ class MastodonStreamListener(mastodon.StreamListener):
                 session.delete(server)
 
             session.commit()
+
+        session.close()
 
         self.post(f'@{acct} 구독 해지 되었습니다', visibility='direct', in_reply_to_id=reply_id)
 
