@@ -100,7 +100,7 @@ class MastodonStreamListener(mastodon.StreamListener):
         if update_type not in valid_values:
             self.post(
                 f'Invalid type. valid types are {", ".join(valid_values)}',
-                visiblity='direct', in_reply_to_id=reply_id)
+                visibility='direct', in_reply_to_id=reply_id)
 
         self.logger.info(f'Changing update type of {acct} to {update_type}')
 
@@ -110,13 +110,13 @@ class MastodonStreamListener(mastodon.StreamListener):
         if not admin:
             self.post(
                 'You are not registered. Please send me "register" to register you.',
-                visiblity='direct', in_reply_to_id=reply_id)
+                visibility='direct', in_reply_to_id=reply_id)
         else:
             admin.update_type = UpdateType(update_type)
             session.commit()
             self.post(
                 f'Changed update type to {update_type}',
-                visiblity='direct', in_reply_to_id=reply_id)
+                visibility='direct', in_reply_to_id=reply_id)
 
         session.close()
 
