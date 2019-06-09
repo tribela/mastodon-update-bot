@@ -1,4 +1,6 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Integer
+import enum
+
+from sqlalchemy import Column, String, DateTime, ForeignKey, Integer, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -47,6 +49,11 @@ class Server(Base):
         return f'<{self.__class__.__name__} {self.domain} {self.version} ({self.last_fetched})>'
 
 
+class UpdateType(enum.Enum):
+    all = 'all'
+    stable = 'stable'
+
+
 class Admin(Base):
 
     __tablename__ = 'admins'
@@ -54,6 +61,7 @@ class Admin(Base):
     acct = Column(String, primary_key=True)
     domain = Column(String, ForeignKey(Server.domain))
     server = relationship(Server, backref='admins')
+    update_type = Column(Enum(UpdateType, native_enum=False), default=UpdateType.stable.value, nullable=False)
 
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.acct}>'

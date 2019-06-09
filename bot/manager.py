@@ -15,7 +15,7 @@ from sqlalchemy import func
 
 from .engine import get_session
 from .mastodon import MastodonStreamListener
-from .models import Mastodon, Server, Admin
+from .models import Mastodon, Server, Admin, UpdateType
 
 
 class MastodonManager():
@@ -166,6 +166,9 @@ class MastodonManager():
         days_passed = (self.utcnow() - release_date).days
 
         for admin in server.admins:
+            if admin.update_type == UpdateType.stable and self.is_rc(release):
+                continue
+
             self.post(
                 f'@{admin.acct}\n'
                 f'{release}가 릴리즈 된 지 {days_passed}일 지났어요\n'
@@ -177,6 +180,9 @@ class MastodonManager():
     def notify_new_version(self, release):
         session = self.Session()
         for admin in session.query(Admin).all():
+            if admin.update_type == UpdateType.stable and self.is_rc(release):
+                continue
+
             self.post(
                 f'@{admin.acct}\n'
                 f'새로운 마스토돈 {release}가 릴리즈 되었어요\n'
@@ -194,6 +200,10 @@ class MastodonManager():
                 self.api.status_post(status, *args, **kwargs)
             except mastodon.MastodonError as e:
                 self.logger.error(traceback.format_exc())
+
+    @staticmethod
+    def is_rc(release):
+        return 'rc' in release
 
     @staticmethod
     def utcnow():
