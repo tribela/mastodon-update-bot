@@ -3,6 +3,7 @@ import functools
 import logging
 import math
 import time
+import traceback
 from multiprocessing.pool import ThreadPool
 
 import feedparser
@@ -104,7 +105,8 @@ class MastodonManager():
             session.commit()
             session.close()
         except Exception as e:
-            self.logger.error(e)
+            self.logger.error(traceback.format_exc())
+            self.logger.error(f'Error while checking {domain}')
             session.close()
             return
 
@@ -191,7 +193,7 @@ class MastodonManager():
             try:
                 self.api.status_post(status, *args, **kwargs)
             except mastodon.MastodonError as e:
-                self.logger.error(e)
+                self.logger.error(traceback.format_exc())
 
     @staticmethod
     def utcnow():
