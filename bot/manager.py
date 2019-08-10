@@ -172,7 +172,8 @@ class MastodonManager():
             self.post(
                 f'@{admin.acct}\n'
                 f'{release}가 릴리즈 된 지 {days_passed}일 지났어요\n'
-                f'https://github.com/tootsuite/mastodon/releases/{release}'
+                f'https://github.com/tootsuite/mastodon/releases/{release}',
+                visibility='unlisted'
             )
 
         session.close()
@@ -186,7 +187,8 @@ class MastodonManager():
             self.post(
                 f'@{admin.acct}\n'
                 f'새로운 마스토돈 {release}가 릴리즈 되었어요\n'
-                f'https://github.com/tootsuite/mastodon/releases/{release}'
+                f'https://github.com/tootsuite/mastodon/releases/{release}',
+                visibility='unlisted'
             )
 
         session.close()
