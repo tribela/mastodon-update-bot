@@ -101,11 +101,6 @@ class MastodonManager():
 
             server.last_fetched = func.now()
             server.version = server_version
-
-            last_notified = server.last_notified
-
-            session.commit()
-            session.close()
         except Exception as e:
             self.logger.error(traceback.format_exc())
             self.logger.error(f'Error while checking {domain}')
@@ -114,15 +109,15 @@ class MastodonManager():
 
         if version.parse(server_version) < version.parse(release):
             self.logger.info(f'{domain} is still {server_version}')
-            if self.should_notify(last_notified):
+            if self.should_notify(server.last_notified):
                 self.logger.info(f'Notify to {domain}')
                 self.notify_admins(domain, release)
                 server.last_notified = func.now()
             else:
                 self.logger.debug(f'Not notifying to {domain}')
 
-            session.commit()
-            session.close()
+        session.commit()
+        session.close()
 
     def job(self):
         self.logger.debug('Starting job')
