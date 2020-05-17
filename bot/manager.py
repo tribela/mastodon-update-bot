@@ -129,9 +129,10 @@ class MastodonManager():
             self.notify_new_version(release)
         else:
             pool = ThreadPool()
-            for server in session.query(Server).all():
-                pool.apply_async(self.check_and_notify, args=(server.domain, release))
-
+            pool.starmap(self.check_and_notify, (
+                (server.domain, release)
+                for server in session.query(Server).all()
+            ))
             pool.close()
             pool.join()
 
