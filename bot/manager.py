@@ -48,7 +48,10 @@ class MastodonManager():
         self.logger.debug(f'Days notified: {days_notified}, passed: {days_passed}')
 
         # 0, 1, 2, 4, 8
-        notified_level = math.log(days_notified, 2) if days_notified else -1
+        try:
+            notified_level = math.log(days_notified, 2) if days_notified else -1
+        except ValueError:
+            notified_level = -1
         passed_level = math.log(days_passed, 2) if days_passed else -1
 
         session.close()
