@@ -32,6 +32,8 @@ target_metadata = models.Base.metadata
 # ... etc.
 
 DB_URL = os.getenv('DATABASE_URL')
+if DB_URL.startswith('postgres://'):
+    DB_URL = DB_URL.replace('postgres://', 'postgresql://', 1)
 
 
 def run_migrations_offline():
