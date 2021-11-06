@@ -56,7 +56,7 @@ class MastodonManager():
 
         session.close()
 
-        return passed_level - notified_level >= 1
+        return passed_level - notified_level >= 1 and days_passed >= 1
 
     def check_mastodon_release(self):
         """
