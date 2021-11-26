@@ -179,7 +179,13 @@ class MastodonManager():
 
         session.close()
 
-    def notify_new_version(self, release):
+    def notify_new_version(self, release: str):
+        self.post(
+            f'새로운 마스토돈 {release}가 릴리즈 되었어요!!\n'
+            f'https://github.com/tootsuite/mastodon/releases/{release}',
+            visibility='public'
+        )
+
         session = self.Session()
         for admin in session.query(Admin).all():
             if admin.update_type == UpdateType.stable and self.is_rc(release):
