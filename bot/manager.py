@@ -36,15 +36,18 @@ class MastodonManager():
         self.stream_listener = MastodonStreamListener(self.api, self.Session, debug=debug)
 
     def should_notify(self, last_notified: datetime.datetime):
-        if last_notified is None:
-            return True
 
         session = self.Session()
+
         release_date = session.query(Mastodon).one().updated
-        # Days from release to last notified
-        days_notified = (last_notified - release_date).days
         # Days from release to now
         days_passed = (self.utcnow() - release_date).days
+
+        if last_notified is None:
+            return days_passed >= 1
+
+        # Days from release to last notified
+        days_notified = (last_notified - release_date).days
         self.logger.debug(f'Days notified: {days_notified}, passed: {days_passed}')
 
         # 0, 1, 2, 4, 8
