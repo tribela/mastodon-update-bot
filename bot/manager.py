@@ -66,7 +66,7 @@ class MastodonManager():
         Check latest mastodon release.
         Return (version: str, is_new: bool)
         """
-        feed = feedparser.parse('https://github.com/tootsuite/mastodon/releases.atom')
+        feed = feedparser.parse('https://github.com/mastodon/mastodon/releases.atom')
         latest_release = feed.entries[0]
 
         current_version = latest_release.title
@@ -176,7 +176,7 @@ class MastodonManager():
             self.post(
                 f'@{admin.acct}\n'
                 f'{release}가 릴리즈 된 지 {days_passed}일 지났어요\n'
-                f'https://github.com/tootsuite/mastodon/releases/{release}',
+                f'https://github.com/mastodon/mastodon/releases/{release}',
                 visibility='unlisted'
             )
 
@@ -185,7 +185,7 @@ class MastodonManager():
     def notify_new_version(self, release: str):
         self.post(
             f'새로운 마스토돈 {release}가 릴리즈 되었어요!!\n'
-            f'https://github.com/tootsuite/mastodon/releases/{release}',
+            f'https://github.com/mastodon/mastodon/releases/{release}',
             visibility='public'
         )
 
@@ -197,7 +197,7 @@ class MastodonManager():
             self.post(
                 f'@{admin.acct}\n'
                 f'새로운 마스토돈 {release}가 릴리즈 되었어요\n'
-                f'https://github.com/tootsuite/mastodon/releases/{release}',
+                f'https://github.com/mastodon/mastodon/releases/{release}',
                 visibility='unlisted'
             )
 
