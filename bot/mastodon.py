@@ -47,8 +47,8 @@ class MastodonStreamListener(mastodon.StreamListener):
             self.register(account, status['id'])
         elif PATTERN_UNREGISTER.search(content):
             self.unregister(account, status['id'])
-        elif PATTERN_TYPE.search(content):
-            update_type = PATTERN_TYPE.search(content).group(1)
+        elif found := PATTERN_TYPE.search(content):
+            update_type = found.group(1)
             self.change_update_type(account, status['id'], update_type)
 
     def register(self, account, reply_id):
@@ -119,7 +119,6 @@ class MastodonStreamListener(mastodon.StreamListener):
                 visibility='direct', in_reply_to_id=reply_id)
 
         session.close()
-
 
     def full_acct(self, account):
         acct = account.acct

@@ -96,8 +96,8 @@ class MastodonManager():
         return current_version, is_new
 
     def check_and_notify(self, domain: str, release: str):
+        session = self.Session()
         try:
-            session = self.Session()
             server = session.query(Server).filter(Server.domain == domain).one()
             self.logger.debug(f'Checking {server.domain}')
             server_version = requests.get(f'https://{domain}/api/v1/instance').json()['version']
@@ -107,7 +107,7 @@ class MastodonManager():
 
             server.last_fetched = func.now()
             server.version = server_version
-        except Exception as e:
+        except Exception:
             self.logger.error(traceback.format_exc())
             self.logger.error(f'Error while checking {domain}')
             session.close()
@@ -210,7 +210,7 @@ class MastodonManager():
         else:
             try:
                 self.api.status_post(status, *args, **kwargs)
-            except mastodon.MastodonError as e:
+            except mastodon.MastodonError:
                 self.logger.error(traceback.format_exc())
 
     @staticmethod
