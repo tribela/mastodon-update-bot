@@ -2,6 +2,8 @@ import datetime
 import functools
 import logging
 import math
+import socket
+import ssl
 import time
 import traceback
 from multiprocessing.pool import ThreadPool
@@ -144,6 +146,46 @@ class MastodonManager():
 
         session.close()
 
+    def check_ssl_and_notify(self, domain: str):
+        ssl_date_fmt = r'%b %d %H:%M:%S %Y %Z'
+
+        context = ssl.create_default_context()
+        with socket.create_connection((domain, 443)) as sock:
+            with context.wrap_socket(sock, server_hostname=domain) as ssock:
+                ssl_info = ssock.getpeercert()
+                expires = datetime.datetime.strptime(ssl_info['notAfter'], ssl_date_fmt)
+                days_left = (expires - datetime.datetime.utcnow()).days
+                self.logger.debug(f'{domain} SSL expires in {days_left} days')
+
+                if days_left <= 7:
+                    self.notify_ssl_expire(domain, days_left)
+
+    def notify_ssl_expire(self, domain: str, days_left: int):
+        self.logger.info(f'Notify SSL expire to {domain}')
+        session = self.Session()
+        server = session.query(Server).filter_by(domain=domain).one()
+
+        for admin in server.admins:
+            self.post(
+                f'@{admin.acct}\n'
+                f'{domain} 인증서가 {days_left}일 후에 만료됩니다.',
+                visibility='private',
+                language='ko'
+            )
+
+        session.close()
+
+    def ssl_check_job(self):
+        self.logger.debug('Starting ssl check job')
+        session = self.Session()
+        pool = ThreadPool()
+        pool.starmap(self.check_ssl_and_notify, (
+            (server.domain, )
+            for server in session.query(Server).all()
+        ))
+        pool.close()
+        pool.join()
+
     def run(self):
         me = self.api.account_verify_credentials()
         self.logger.info(f'I am {me.acct}')
@@ -153,8 +195,10 @@ class MastodonManager():
         self.logger.info('Scheduling jobs')
         if self.debug:
             schedule.every(10).seconds.do(self.job)
+            schedule.every(30).seconds.do(self.ssl_check_job)
         else:
             schedule.every(1).hours.do(self.job)
+            schedule.every(1).day.do(self.ssl_check_job)
         schedule.run_all()
         while True:
             schedule.run_pending()
