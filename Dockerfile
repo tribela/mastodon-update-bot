@@ -8,7 +8,7 @@ WORKDIR /src
 COPY poetry.lock pyproject.toml /src/
 RUN pip install poetry \
     && poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi \
+    && poetry install --only main --no-interaction --no-ansi \
     && pip uninstall --yes poetry
 ADD . /src
 
