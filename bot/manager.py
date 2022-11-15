@@ -244,7 +244,7 @@ class MastodonManager():
                 f'@{admin.acct}\n'
                 f'새로운 마스토돈 {release}가 릴리즈 되었어요\n'
                 f'https://github.com/mastodon/mastodon/releases/{release}',
-                visibility='unlisted',
+                visibility='direct',
                 language='ko'
             )
 
