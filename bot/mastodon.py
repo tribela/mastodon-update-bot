@@ -1,6 +1,7 @@
 import functools
 import logging
 import re
+import urllib.parse
 
 import mastodon
 
@@ -54,13 +55,15 @@ class MastodonStreamListener(mastodon.StreamListener):
     def register(self, account, reply_id):
         acct = self.full_acct(account)
         domain = self.get_domain(account)
+        web_domain = self.get_web_domain(account)
 
         self.logger.info(f'Registering {acct}')
 
         session = self.Session()
         server, created = get_or_create(
             session, Server,
-            domain=domain
+            domain=domain,
+            web_domain=web_domain,
         )
         admin, created = get_or_create(
             session, Admin,
@@ -126,6 +129,9 @@ class MastodonStreamListener(mastodon.StreamListener):
 
     def get_domain(self, account):
         return self.full_acct(account).split('@')[1]
+
+    def get_web_domain(self, account):
+        return urllib.parse.urlparse(account.url).netloc
 
     @functools.wraps(mastodon.Mastodon.status_post)
     def post(self, status, *args, **kwargs):
