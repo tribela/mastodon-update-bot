@@ -41,6 +41,7 @@ class Server(Base):
     __tablename__ = 'servers'
 
     domain = Column(String, primary_key=True)
+    web_domain = Column(String)
     version = Column(String)
     last_fetched = Column(DateTime(timezone=True))
     last_notified = Column(DateTime(timezone=True))

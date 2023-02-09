@@ -97,12 +97,12 @@ class MastodonManager():
 
         return current_version, is_new
 
-    def check_and_notify(self, domain: str, release: str):
+    def check_and_notify(self, domain: str, web_domain: str, release: str):
         session = self.Session()
         try:
             server = session.query(Server).filter(Server.domain == domain).one()
             self.logger.debug(f'Checking {server.domain}')
-            server_version = requests.get(f'https://{domain}/api/v1/instance').json()['version']
+            server_version = requests.get(f'https://{web_domain}/api/v1/instance').json()['version']
 
             if server.version != server_version:
                 server.last_notified = None
@@ -111,7 +111,7 @@ class MastodonManager():
             server.version = server_version
         except Exception:
             self.logger.error(traceback.format_exc())
-            self.logger.error(f'Error while checking {domain}')
+            self.logger.error(f'Error while checking {web_domain}')
             session.close()
             return
 
@@ -138,7 +138,7 @@ class MastodonManager():
         else:
             pool = ThreadPool()
             pool.starmap(self.check_and_notify, (
-                (server.domain, release)
+                (server.domain, server.web_domain, release)
                 for server in session.query(Server).all()
             ))
             pool.close()
@@ -146,16 +146,16 @@ class MastodonManager():
 
         session.close()
 
-    def check_ssl_and_notify(self, domain: str):
+    def check_ssl_and_notify(self, domain: str, web_domain: str):
         ssl_date_fmt = r'%b %d %H:%M:%S %Y %Z'
 
         context = ssl.create_default_context()
         with socket.create_connection((domain, 443)) as sock:
-            with context.wrap_socket(sock, server_hostname=domain) as ssock:
+            with context.wrap_socket(sock, server_hostname=web_domain) as ssock:
                 ssl_info = ssock.getpeercert()
                 expires = datetime.datetime.strptime(ssl_info['notAfter'], ssl_date_fmt)
                 days_left = (expires - datetime.datetime.utcnow()).days
-                self.logger.debug(f'{domain} SSL expires in {days_left} days')
+                self.logger.debug(f'{web_domain} SSL expires in {days_left} days')
 
                 if days_left <= 7:
                     self.notify_ssl_expire(domain, days_left)
@@ -180,7 +180,7 @@ class MastodonManager():
         session = self.Session()
         pool = ThreadPool()
         pool.starmap(self.check_ssl_and_notify, (
-            (server.domain, )
+            (server.domain, server.web_domain)
             for server in session.query(Server).all()
         ))
         pool.close()
