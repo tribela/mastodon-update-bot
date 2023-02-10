@@ -45,6 +45,7 @@ class Server(Base):
     version = Column(String)
     last_fetched = Column(DateTime(timezone=True))
     last_notified = Column(DateTime(timezone=True))
+    last_tls_notified = Column(DateTime(timezone=True))
 
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.domain} {self.version} ({self.last_fetched})>'
