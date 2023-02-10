@@ -2,6 +2,7 @@ import functools
 import logging
 import re
 import urllib.parse
+import httpx
 
 import mastodon
 
@@ -58,6 +59,12 @@ class MastodonStreamListener(mastodon.StreamListener):
         web_domain = self.get_web_domain(account)
 
         self.logger.info(f'Registering {acct}')
+
+        if not self.is_mastodon(web_domain):
+            self.post(
+                f'@{acct} {web_domain} is not a mastodon instance',
+                visibility='direct', in_reply_to_id=reply_id)
+            return
 
         session = self.Session()
         server, created = get_or_create(
@@ -132,6 +139,16 @@ class MastodonStreamListener(mastodon.StreamListener):
 
     def get_web_domain(self, account):
         return urllib.parse.urlparse(account.url).netloc
+
+    @staticmethod
+    def is_mastodon(web_domain: str):
+        try:
+            r = httpx.get(f'https://{web_domain}/nodeinfo/2.0')
+            r.raise_for_status()
+            nodeinfo = r.json()
+            return nodeinfo['software']['name'].lower() == 'mastodon'
+        except httpx.HTTPError:
+            return False
 
     @functools.wraps(mastodon.Mastodon.status_post)
     def post(self, status, *args, **kwargs):
