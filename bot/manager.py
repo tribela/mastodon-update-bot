@@ -218,7 +218,7 @@ class MastodonManager():
             schedule.every(30).seconds.do(self.ssl_check_job)
         else:
             schedule.every(1).hours.do(self.job)
-            schedule.every(1).day.do(self.ssl_check_job)
+            schedule.every(2).hours.do(self.ssl_check_job)
         # schedule.run_all()
         while True:
             schedule.run_pending()
