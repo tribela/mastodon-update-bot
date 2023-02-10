@@ -149,16 +149,21 @@ class MastodonManager():
     def check_ssl_and_notify(self, domain: str, web_domain: str):
         ssl_date_fmt = r'%b %d %H:%M:%S %Y %Z'
 
-        context = ssl.create_default_context()
-        with socket.create_connection((domain, 443)) as sock:
-            with context.wrap_socket(sock, server_hostname=web_domain) as ssock:
-                ssl_info = ssock.getpeercert()
-                expires = datetime.datetime.strptime(ssl_info['notAfter'], ssl_date_fmt)
-                days_left = (expires - datetime.datetime.utcnow()).days
-                self.logger.debug(f'{web_domain} SSL expires in {days_left} days')
+        try:
+            context = ssl.create_default_context()
+            with socket.create_connection((domain, 443)) as sock:
+                with context.wrap_socket(sock, server_hostname=web_domain) as ssock:
+                    ssl_info = ssock.getpeercert()
+                    expires = datetime.datetime.strptime(ssl_info['notAfter'], ssl_date_fmt)
+                    days_left = (expires - datetime.datetime.utcnow()).days
+                    self.logger.debug(f'{web_domain} SSL expires in {days_left} days')
 
-                if days_left <= 7:
-                    self.notify_ssl_expire(domain, days_left)
+                    if days_left <= 7:
+                        self.notify_ssl_expire(domain, days_left)
+        except Exception:
+            self.logger.error(traceback.format_exc())
+            self.logger.error(f'Error while checking SSL on {web_domain}')
+            return
 
     def notify_ssl_expire(self, domain: str, days_left: int):
         self.logger.info(f'Notify SSL expire to {domain}')
