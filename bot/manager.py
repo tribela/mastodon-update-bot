@@ -237,11 +237,13 @@ class MastodonManager():
             if admin.update_type == UpdateType.stable and self.is_rc(release):
                 continue
 
+            visibility = 'direct' if days_passed < 7 else 'unlisted'
+
             self.post(
                 f'@{admin.acct}\n'
                 f'{release}가 릴리즈 된 지 {days_passed}일 지났어요\n'
                 f'https://github.com/mastodon/mastodon/releases/{release}',
-                visibility='unlisted',
+                visibility=visibility,
                 language='ko'
             )
 
