@@ -185,11 +185,13 @@ class MastodonManager():
         session = self.Session()
         server = session.query(Server).filter_by(domain=domain).one()
 
+        visibility = 'public' if days_left < 3 else 'private'
+
         for admin in server.admins:
             self.post(
                 f'@{admin.acct}\n'
                 f'{domain} 인증서가 {days_left}일 후에 만료됩니다.',
-                visibility='private',
+                visibility=visibility,
                 language='ko'
             )
 
