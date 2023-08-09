@@ -286,7 +286,7 @@ class MastodonManager():
 
     @staticmethod
     def is_rc(release):
-        return 'rc' in release
+        return '-rc' in release or '-beta' in release
 
     @staticmethod
     def utcnow():
