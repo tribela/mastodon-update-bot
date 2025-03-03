@@ -1,8 +1,8 @@
 import os
 
-from bot.engine import get_session
-from bot.models import *  # noqa
-from bot.manager import MastodonManager
+from mastodon_update_bot.engine import get_session
+from mastodon_update_bot.models import *  # noqa
+from mastodon_update_bot.manager import MastodonManager
 
 Session = get_session(os.getenv('DATABASE_URL'))
 

@@ -1,18 +1,15 @@
-FROM python:3.9
+FROM python:3.13
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONHASHSEED=1
 ENV PYTHONFAULTHANDLER=1
 
-WORKDIR /src
-COPY poetry.lock pyproject.toml /src/
-RUN pip install poetry \
-    && poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi \
-    && pip uninstall --yes poetry
-ADD . /src
+WORKDIR /app
+COPY . /app
+RUN uv sync --frozen
 
-RUN useradd -m user
-USER user
+ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["python", "-u", "-m", "bot"]
+CMD ["uv", "run", "-m", "mastodon_update_bot"]

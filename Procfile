@@ -1,1 +1,1 @@
-bot: python -u -m bot
+bot: uv run -m mastodon_update_bot

@@ -23,7 +23,7 @@ fileConfig(config.config_file_name)
 sys.path.append(
     str(pathlib.Path(__file__).resolve().parents[1])
 )
-from bot import models  # noqa
+from mastodon_update_bot import models  # noqa
 target_metadata = models.Base.metadata
 
 # other values from the config, defined by the needs of env.py,

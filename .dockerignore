@@ -1,0 +1,7 @@
+.envrc
+.venv
+.env
+Dockerfile
+.dockerignore
+.git
+.gitignore

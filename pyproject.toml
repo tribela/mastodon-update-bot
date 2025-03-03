@@ -1,23 +1,21 @@
-[tool.poetry]
+[project]
 name = "mastodon-update-bot"
 version = "0.1.0"
 description = ""
-authors = ["Jeong Arm <kjwonmail@gmail.com>"]
-
-[tool.poetry.dependencies]
-python = "^3.8"
-"Mastodon.py" = "^1.5.1"
-SQLAlchemy = "^1.4.25"
-psycopg2-binary = "^2.9.1"
-packaging = "^21.0"
-feedparser = "^6.0.8"
-requests = "^2.26.0"
-schedule = "^1.1.0"
-lxml = "^4.6.3"
-alembic = "^1.7.4"
-httpx = "^0.23.3"
-[tool.poetry.dev-dependencies]
+requires-python = ">=3.12"
+dependencies = [
+    "Mastodon.py>=1.5.1,<2",
+    "SQLAlchemy>=1.4.25,<2",
+    "psycopg2-binary>=2.9.1,<3",
+    "packaging~=21.0",
+    "feedparser>=6.0.8,<7",
+    "requests>=2.26.0,<3",
+    "schedule>=1.1.0,<2",
+    "lxml>=5.3.1",
+    "alembic>=1.7.4,<2",
+    "httpx>=0.23.3,<0.24",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
