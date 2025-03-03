@@ -109,7 +109,7 @@ class MastodonManager():
         try:
             server = session.query(Server).filter(Server.domain == domain).one()
             self.logger.debug(f'Checking {server.domain}')
-            server_version = requests.get(f'https://{web_domain}/api/v1/instance').json()['version']
+            server_version = requests.get(f'https://{web_domain}/api/v2/instance').json()['version']
 
             if server.version != server_version:
                 server.last_notified = None
